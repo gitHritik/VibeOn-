@@ -3,6 +3,7 @@ import React from "react";
 import {
   FlatList,
   Image,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -18,9 +19,10 @@ interface Song {
 
 interface AddedMusicProps {
   songs: Song[];
+  handleMusic: () => void;
 }
 
-export default function AddedMusic({ songs }: AddedMusicProps) {
+export default function AddedMusic({ songs, handleMusic }: AddedMusicProps) {
   return (
     <View style={styles.container}>
       <FlatList
@@ -51,9 +53,9 @@ export default function AddedMusic({ songs }: AddedMusicProps) {
       />
 
       {/* Floating Add Button */}
-      <TouchableOpacity style={styles.floatingButton}>
+      <Pressable style={styles.floatingButton} onPress={handleMusic}>
         <Ionicons name="add" size={30} color="#fff" />
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 }

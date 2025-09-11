@@ -1,32 +1,81 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as DocumentPicker from "expo-document-picker";
+import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 import AddedMusic from "../../components/AddedMusic";
 import Searchbar from "./../../components/Searchbar";
 import SmallPlayer from "./../../components/SmallPlayer";
 
-const songs = [
-  {
-    id: "1",
-    title: "Blinding Lights",
-    artist: "The Weeknd",
-    thumbnail:
-      "https://assets-in.bmscdn.com/iedb/movies/images/mobile/thumbnail/xlarge/saiyaara-et00447951-1752737895.jpg",
-  },
-  {
-    id: "2",
-    title: "Shape of You",
-    artist: "Ed Sheeran",
-    thumbnail:
-      "https://assets-in.bmscdn.com/iedb/movies/images/mobile/thumbnail/xlarge/saiyaara-et00447951-1752737895.jpg",
-  },
-];
+interface Song {
+  id: string;
+  title: string;
+  artist: string;
+  thumbnail: string;
+  uri: string;
+}
 
 export default function Index() {
+  const [songs, setSongs] = useState<Song[]>([]);
+
+  // 🔹 Load songs from storage when app starts
+  useEffect(() => {
+    const loadSongs = async () => {
+      try {
+        const saved = await AsyncStorage.getItem("songs");
+        if (saved) setSongs(JSON.parse(saved));
+        console.log("Saved" + saved);
+      } catch (err) {
+        console.error("Error loading songs:", err);
+      }
+    };
+    loadSongs();
+  }, []);
+
+  // 🔹 Save songs whenever list changes
+  useEffect(() => {
+    const saveSongs = async () => {
+      try {
+        await AsyncStorage.setItem("songs", JSON.stringify(songs));
+      } catch (err) {
+        console.error("Error saving songs:", err);
+      }
+    };
+    saveSongs();
+  }, [songs]);
+
+  // Add Music from storage
+  const handleAddMusic = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "audio/*",
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) return;
+
+      const file = result.assets[0];
+
+      const newSong: Song = {
+        id: Date.now().toString(),
+        title: file.name.replace(".mp3", ""),
+        artist: "Unknown",
+        thumbnail: "https://via.placeholder.com/150",
+        uri: file.uri,
+      };
+
+      setSongs((prev) => [...prev, newSong]);
+    } catch (error) {
+      console.error("Error picking file:", error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Searchbar />
       {songs.length > 0 ? (
-        <AddedMusic songs={songs} />
+        <AddedMusic handleMusic={handleAddMusic} songs={songs} />
       ) : (
         <>
           <Text style={styles.title}>🎵 Music</Text>
@@ -43,7 +92,7 @@ export default function Index() {
                 transform: [{ scale: 0.97 }],
               },
             ]}
-            onPress={() => console.log("Add Music pressed!")}
+            onPress={handleAddMusic}
           >
             <Text style={styles.buttonText}>+ Add Music</Text>
           </Pressable>

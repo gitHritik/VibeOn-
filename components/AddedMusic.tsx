@@ -1,12 +1,12 @@
+import { usePlayer } from "@/context/PlayerContext";
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import React, { useState } from "react";
 import {
   FlatList,
   Image,
   Pressable,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -15,98 +15,150 @@ interface Song {
   title: string;
   artist: string;
   thumbnail: string;
+  uri: string;
 }
 
 interface AddedMusicProps {
   songs: Song[];
   handleMusic: () => void;
+  onDeleteSongs: (ids: string[]) => void; // 👈 parent handles deletion
 }
 
-export default function AddedMusic({ songs, handleMusic }: AddedMusicProps) {
+export default function AddedMusic({
+  songs,
+  handleMusic,
+  onDeleteSongs,
+}: AddedMusicProps) {
+  const { playSong, currentSong } = usePlayer();
+
+  // Track selected songs
+  const [selectedSongs, setSelectedSongs] = useState<string[]>([]);
+
+  const toggleSelect = (id: string) => {
+    setSelectedSongs((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    );
+  };
+
+  const isSelected = (id: string) => selectedSongs.includes(id);
+
   return (
     <View style={styles.container}>
       <FlatList
         data={songs}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.songCard}>
-            {/* Thumbnail */}
-            <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
+          <Pressable
+            onPress={
+              () =>
+                selectedSongs.length > 0
+                  ? toggleSelect(item.id) // if already selecting, continue selecting
+                  : playSong(item) // normal play if nothing is selected
+            }
+            onLongPress={() => toggleSelect(item.id)} // start selection
+          >
+            <View style={styles.songCard}>
+              {/* Thumbnail with tick overlay */}
+              <View>
+                <Image
+                  source={{ uri: item.thumbnail }}
+                  style={[
+                    styles.thumbnail,
+                    isSelected(item.id) && { opacity: 0.5 },
+                  ]}
+                />
+                {isSelected(item.id) && (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={24}
+                    color="#4CAF50"
+                    style={styles.tick}
+                  />
+                )}
+              </View>
 
-            {/* Song Info */}
-            <View style={styles.songInfo}>
-              <Text style={styles.songTitle} numberOfLines={1}>
-                {item.title}
-              </Text>
-              <Text style={styles.songArtist} numberOfLines={1}>
-                {item.artist}
-              </Text>
+              {/* Song Info */}
+              <View style={styles.songInfo}>
+                <Text style={styles.songTitle}>{item.title}</Text>
+                <Text style={styles.songArtist}>{item.artist}</Text>
+              </View>
+
+              {/* Play Button (disabled if selecting) */}
+              {selectedSongs.length === 0 && (
+                <Pressable onPress={() => playSong(item)}>
+                  <Ionicons name="play-circle" size={28} color="#FF4C29" />
+                </Pressable>
+              )}
             </View>
-
-            {/* Play Button */}
-            <TouchableOpacity>
-              <Ionicons name="play-circle" size={28} color="#FF4C29" />
-            </TouchableOpacity>
-          </View>
+          </Pressable>
         )}
-        contentContainerStyle={{ paddingBottom: 80 }}
       />
 
       {/* Floating Add Button */}
-      <Pressable style={styles.floatingButton} onPress={handleMusic}>
-        <Ionicons name="add" size={30} color="#fff" />
-      </Pressable>
+      {selectedSongs.length === 0 && (
+        <Pressable
+          style={[
+            styles.floatingButton,
+            currentSong ? { bottom: 68 } : { bottom: 10 },
+          ]}
+          onPress={handleMusic}
+        >
+          <Ionicons name="add" size={30} color="#fff" />
+        </Pressable>
+      )}
+
+      {/* Delete Button (shows when songs selected) */}
+      {selectedSongs.length > 0 && (
+        <Pressable
+          style={[
+            styles.deleteButton,
+            currentSong ? { bottom: 68 } : { bottom: 10 },
+          ]}
+          onPress={() => {
+            onDeleteSongs(selectedSongs);
+            setSelectedSongs([]); // clear selection
+          }}
+        >
+          <Ionicons name="trash" size={26} color="#fff" />
+        </Pressable>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#121212",
-  },
+  container: { flex: 1, backgroundColor: "#121212" },
   songCard: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between", // spread thumbnail+info and play button
-    width: "100%", // take full width
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    justifyContent: "space-between",
+    padding: 12,
     borderBottomWidth: 0.5,
-    borderBottomColor: "#333", // divider between songs
+    borderBottomColor: "#333",
   },
-  thumbnail: {
-    width: 55,
-    height: 55,
-    borderRadius: 8,
-    marginRight: 12,
+  thumbnail: { width: 55, height: 55, borderRadius: 8, marginRight: 12 },
+  tick: {
+    position: "absolute",
+    top: "35%",
+    left: "35%",
   },
-  songInfo: {
-    flex: 1, // takes remaining space between thumbnail & play button
-    justifyContent: "center",
-  },
-  songTitle: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  songArtist: {
-    color: "#aaa",
-    fontSize: 14,
-    marginTop: 2,
-  },
+  songInfo: { flex: 1 },
+  songTitle: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  songArtist: { color: "#aaa", fontSize: 14 },
   floatingButton: {
     position: "absolute",
-    bottom: 65,
     right: 0,
     backgroundColor: "#FF4C29",
     borderRadius: 50,
     padding: 16,
     zIndex: 10,
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
+  },
+  deleteButton: {
+    position: "absolute",
+    right: 0,
+    backgroundColor: "#E53935",
+    borderRadius: 50,
+    padding: 16,
+    zIndex: 10,
   },
 });

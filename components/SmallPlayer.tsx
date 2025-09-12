@@ -1,42 +1,30 @@
+import { usePlayer } from "@/context/PlayerContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function SmallPlayer() {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const { currentSong, isPlaying, togglePlayPause } = usePlayer();
   const router = useRouter();
+
+  if (!currentSong) return null;
 
   return (
     <Pressable style={styles.container} onPress={() => router.push("/player")}>
-      {/* Thumbnail */}
-      <Image
-        source={{
-          uri: "https://assets-in.bmscdn.com/iedb/movies/images/mobile/thumbnail/xlarge/saiyaara-et00447951-1752737895.jpg",
-        }}
-        style={styles.thumbnail}
-      />
-
-      {/* Song Info */}
+      <Image source={{ uri: currentSong.thumbnail }} style={styles.thumbnail} />
       <View style={styles.textContainer}>
-        <Text style={styles.song} numberOfLines={1}>
-          Blinding Lights
-        </Text>
-        <Text style={styles.artist} numberOfLines={1}>
-          The Weeknd
-        </Text>
+        <Text style={styles.song}>{currentSong.title}</Text>
+        <Text style={styles.artist}>{currentSong.artist}</Text>
       </View>
-
-      {/* Controls */}
       <View style={styles.controls}>
-        <Pressable onPress={() => setIsPlaying(!isPlaying)}>
+        <Pressable onPress={togglePlayPause}>
           <Ionicons
             name={isPlaying ? "pause" : "play"}
             size={28}
             color="#fff"
           />
         </Pressable>
-
         <Pressable>
           <Ionicons name="play-skip-forward" size={28} color="#fff" />
         </Pressable>
@@ -59,24 +47,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#333",
   },
-  thumbnail: {
-    width: 50,
-    height: 50,
-    borderRadius: 8,
-    marginRight: 12,
-  },
-  textContainer: {
-    flex: 1,
-  },
-  song: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  artist: {
-    color: "#aaa",
-    fontSize: 14,
-  },
+  thumbnail: { width: 50, height: 50, borderRadius: 8, marginRight: 12 },
+  textContainer: { flex: 1 },
+  song: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  artist: { color: "#aaa", fontSize: 14 },
   controls: {
     flexDirection: "row",
     alignItems: "center",

@@ -2,7 +2,12 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, TextInput, View } from "react-native";
 
-export default function Searchbar() {
+interface SearchbarProps {
+  value: string;
+  onChangeText: (text: string) => void;
+}
+
+export default function Searchbar({ value, onChangeText }: SearchbarProps) {
   return (
     <View style={styles.container}>
       {/* Search Icon */}
@@ -13,6 +18,9 @@ export default function Searchbar() {
         placeholder="Search songs, artists..."
         placeholderTextColor="#aaa"
         style={styles.input}
+        value={value}
+        onChangeText={onChangeText}
+        clearButtonMode="while-editing"
       />
     </View>
   );

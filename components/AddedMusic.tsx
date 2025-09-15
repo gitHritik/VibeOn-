@@ -1,3 +1,4 @@
+import { useFavourites } from "@/context/FavouriteContext";
 import { usePlayer } from "@/context/PlayerContext";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
@@ -31,6 +32,8 @@ export default function AddedMusic({
 }: AddedMusicProps) {
   const { playSong, currentSong } = usePlayer();
 
+  const { toggleFavourite, favouriteSongs } = useFavourites();
+
   // Track selected songs
   const [selectedSongs, setSelectedSongs] = useState<string[]>([]);
 
@@ -40,7 +43,11 @@ export default function AddedMusic({
     );
   };
 
+  // const isFavourite = (id: string) => favourite.includes(id);
   const isSelected = (id: string) => selectedSongs.includes(id);
+  const areAllSelectedFav = selectedSongs.every((id) =>
+    favouriteSongs.some((song) => song.id === id)
+  );
 
   return (
     <View style={styles.container}>
@@ -53,7 +60,7 @@ export default function AddedMusic({
               () =>
                 selectedSongs.length > 0
                   ? toggleSelect(item.id) // if already selecting, continue selecting
-                  : playSong(item) // normal play if nothing is selected
+                  : playSong(item, songs) // normal play if nothing is selected
             }
             onLongPress={() => toggleSelect(item.id)} // start selection
           >
@@ -109,18 +116,44 @@ export default function AddedMusic({
 
       {/* Delete Button (shows when songs selected) */}
       {selectedSongs.length > 0 && (
-        <Pressable
-          style={[
-            styles.deleteButton,
-            currentSong ? { bottom: 68 } : { bottom: 10 },
-          ]}
-          onPress={() => {
-            onDeleteSongs(selectedSongs);
-            setSelectedSongs([]); // clear selection
-          }}
-        >
-          <Ionicons name="trash" size={26} color="#fff" />
-        </Pressable>
+        <>
+          {/* Delete button (bottom-right) */}
+          <Pressable
+            style={[
+              styles.deleteButton,
+              currentSong ? { bottom: 68 } : { bottom: 10 },
+            ]}
+            onPress={() => {
+              onDeleteSongs(selectedSongs);
+              setSelectedSongs([]); // clear selection
+            }}
+          >
+            <Ionicons name="trash" size={26} color="#fff" />
+          </Pressable>
+
+          {/* Favourite button (bottom-left) */}
+          <Pressable
+            style={[
+              styles.favouriteButton,
+              currentSong ? { bottom: 68 } : { bottom: 10 },
+            ]}
+            onPress={() => {
+              // loop through selected songs and toggle them as favourite
+              const selected = songs.filter((s) =>
+                selectedSongs.includes(s.id)
+              );
+              selected.forEach((song) => toggleFavourite(song));
+
+              setSelectedSongs([]); // clear selection
+            }}
+          >
+            <Ionicons
+              name="heart"
+              size={26}
+              color={areAllSelectedFav ? "#FF4C29" : "white"}
+            />
+          </Pressable>
+        </>
       )}
     </View>
   );
@@ -160,5 +193,13 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     padding: 16,
     zIndex: 10,
+  },
+  favouriteButton: {
+    position: "absolute",
+    left: 10, // 👈 bottom-left
+    backgroundColor: "#1E1E1E",
+    padding: 19,
+    borderRadius: 50,
+    elevation: 5,
   },
 });

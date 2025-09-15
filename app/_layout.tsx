@@ -1,14 +1,17 @@
 import { PlayerProvider } from "@/context/PlayerContext";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { FavouriteProvider } from "./../context/FavouriteContext";
 
 export default function RootLayout() {
   return (
-    <PlayerProvider>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-      <StatusBar style="light" />
-    </PlayerProvider>
+    <FavouriteProvider>
+      <PlayerProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+        <StatusBar style="light" />
+      </PlayerProvider>
+    </FavouriteProvider>
   );
 }

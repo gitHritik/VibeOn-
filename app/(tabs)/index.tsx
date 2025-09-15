@@ -1,9 +1,7 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as DocumentPicker from "expo-document-picker";
+import * as MediaLibrary from "expo-media-library";
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 import AddedMusic from "../../components/AddedMusic";
 import Searchbar from "../../components/Searchbar";
 import SmallPlayer from "../../components/SmallPlayer";
@@ -19,10 +17,10 @@ interface Song {
 const images = [
   "https://pbs.twimg.com/media/G0jJL5Va4AAFSVF.jpg",
   "https://i1.sndcdn.com/artworks-000179580652-qskijz-t1080x1080.jpg",
-  // you can add more URLs here in the future
+  // add more thumbnails if you want
 ];
 
-// Utility function to get random item
+// Utility function → pick random image
 const getRandomImage = () => {
   const random = Math.floor(Math.random() * images.length);
   return images[random];
@@ -32,59 +30,60 @@ export default function Index() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [search, setSearch] = useState("");
 
-  //filtering teh songs for search bar
-  const filteredSongs = songs.filter((song) => {
-    song.title.toLowerCase().includes(search.toLowerCase()) ||
-      song.artist.toLowerCase().includes(search.toLowerCase());
-  });
+  // filter songs based on search
+  const filteredSongs = songs.filter(
+    (song) =>
+      song.title?.toLowerCase().includes(search.toLowerCase()) ||
+      song.artist?.toLowerCase().includes(search.toLowerCase())
+  );
 
+  // 🚀 Load all local songs from device storage
   useEffect(() => {
-    const loadSongs = async () => {
-      const data = await AsyncStorage.getItem("songs");
-      if (data) {
-        setSongs((prev) => [...prev, JSON.parse(data)]);
+    const loadAllSongs = async () => {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission required",
+          "We need access to your music files."
+        );
+        return;
       }
+
+      // fetch audio files
+      const media = await MediaLibrary.getAssetsAsync({
+        mediaType: MediaLibrary.MediaType.audio,
+        first: 50, // adjust depending on how many you want
+      });
+
+      // map files into your Song type
+      const allSongs: Song[] = media.assets.map((file) => ({
+        id: file.id,
+        title: file.filename.replace(".mp3", ""),
+        artist: "Unknown", // Needs ID3 parsing for real metadata
+        thumbnail: getRandomImage(),
+        uri: file.uri,
+      }));
+
+      setSongs(allSongs);
     };
 
-    loadSongs();
-  });
+    loadAllSongs();
+  }, []);
+  // console.log(songs[0]);
 
-  useEffect(() => {
-    AsyncStorage.setItem("songs", JSON.stringify(songs));
-  }, [songs]);
-
-  const handleAddMusic = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: "audio/*",
-      copyToCacheDirectory: true,
-    });
-
-    if (result.canceled) return;
-    const file = result.assets[0];
-
-    const newSong: Song = {
-      id: Date.now().toString(),
-      title: file.name.replace(".mp3", ""),
-      artist: "Unknown",
-      thumbnail: getRandomImage(),
-      uri: file.uri,
-    };
-
-    setSongs((prev) => [...prev, newSong]);
-  };
-
-  // console.log(filteredSongs);
-
+  // delete songs
   const handleDeleteSongs = (ids: string[]) => {
     setSongs((prev) => prev.filter((song) => !ids.includes(song.id)));
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* 🔍 Search Bar */}
       <Searchbar value={search} onChangeText={setSearch} />
+
       {filteredSongs.length > 0 ? (
         <AddedMusic
-          handleMusic={handleAddMusic}
+          handleMusic={() => {}} // not needed anymore
           onDeleteSongs={handleDeleteSongs}
           songs={filteredSongs}
         />
@@ -94,13 +93,12 @@ export default function Index() {
         >
           <Text style={styles.title}>🎵 Music</Text>
           <Text style={styles.subtitle}>
-            No songs yet. Add music from your local storage 🎶
+            No songs found in storage. Add some music to your device 🎶
           </Text>
-          <Pressable style={styles.button} onPress={handleAddMusic}>
-            <Text style={styles.buttonText}>+ Add Music</Text>
-          </Pressable>
         </View>
       )}
+
+      {/* Mini Player */}
       <SmallPlayer />
     </SafeAreaView>
   );

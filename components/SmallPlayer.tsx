@@ -5,7 +5,8 @@ import React from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function SmallPlayer() {
-  const { currentSong, isPlaying, togglePlayPause } = usePlayer();
+  const { currentSong, isPlaying, togglePlayPause, playNext } = usePlayer();
+
   const router = useRouter();
 
   if (!currentSong) return null;
@@ -25,7 +26,7 @@ export default function SmallPlayer() {
             color="#fff"
           />
         </Pressable>
-        <Pressable>
+        <Pressable onPress={() => playNext()}>
           <Ionicons name="play-skip-forward" size={28} color="#fff" />
         </Pressable>
       </View>

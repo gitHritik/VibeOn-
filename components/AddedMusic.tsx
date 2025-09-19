@@ -101,7 +101,7 @@ export default function AddedMusic({
         )}
       />
 
-      {/* Floating Add Button */}
+      {/* Floating Add Button
       {selectedSongs.length === 0 && (
         <Pressable
           style={[
@@ -112,7 +112,7 @@ export default function AddedMusic({
         >
           <Ionicons name="add" size={30} color="#fff" />
         </Pressable>
-      )}
+      )} */}
 
       {/* Delete Button (shows when songs selected) */}
       {selectedSongs.length > 0 && (

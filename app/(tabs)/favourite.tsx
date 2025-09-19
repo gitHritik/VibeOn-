@@ -2,6 +2,7 @@ import SmallPlayer from "@/components/SmallPlayer";
 import { useFavourites } from "@/context/FavouriteContext";
 import { usePlayer } from "@/context/PlayerContext";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React from "react";
 import {
   FlatList,
@@ -24,6 +25,7 @@ interface Song {
 export default function Favourite() {
   const { toggleFavourite, favouriteSongs } = useFavourites();
   const { playSong } = usePlayer();
+  const router = useRouter();
 
   const renderSong = ({ item }: { item: Song }) => (
     <Pressable onPress={() => playSong(item, favouriteSongs)}>
@@ -53,7 +55,7 @@ export default function Favourite() {
         <View style={styles.emptyContainer}>
           <Ionicons name="heart-dislike" size={70} color="#555" />
           <Text style={styles.emptyText}>No songs in favourites yet</Text>
-          <Pressable style={styles.addButton}>
+          <Pressable style={styles.addButton} onPress={() => router.push("/")}>
             <Ionicons name="add" size={28} color="#fff" />
             <Text style={styles.addText}>Add a song</Text>
           </Pressable>

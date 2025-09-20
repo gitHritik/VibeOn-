@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import AddedMusic from "../../components/AddedMusic";
 import Searchbar from "../../components/Searchbar";
 import SmallPlayer from "../../components/SmallPlayer";
+import AnimatedScreen from "./../../Animations/AnimatedScreen";
 
 interface Song {
   id: string;
@@ -52,7 +53,7 @@ export default function Index() {
       // fetch audio files
       const media = await MediaLibrary.getAssetsAsync({
         mediaType: MediaLibrary.MediaType.audio,
-        first: 50, // adjust depending on how many you want
+        first: 500, // adjust depending on how many you want
       });
 
       // map files into your Song type
@@ -77,30 +78,32 @@ export default function Index() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* 🔍 Search Bar */}
-      <Searchbar value={search} onChangeText={setSearch} />
+    <AnimatedScreen>
+      <SafeAreaView style={styles.container}>
+        {/* 🔍 Search Bar */}
+        <Searchbar value={search} onChangeText={setSearch} />
 
-      {filteredSongs.length > 0 ? (
-        <AddedMusic
-          handleMusic={() => {}} // not needed anymore
-          onDeleteSongs={handleDeleteSongs}
-          songs={filteredSongs}
-        />
-      ) : (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <Text style={styles.title}>🎵 Music</Text>
-          <Text style={styles.subtitle}>
-            No songs found in storage. Add some music to your device 🎶
-          </Text>
-        </View>
-      )}
+        {filteredSongs.length > 0 ? (
+          <AddedMusic
+            handleMusic={() => {}} // not needed anymore
+            onDeleteSongs={handleDeleteSongs}
+            songs={filteredSongs}
+          />
+        ) : (
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
+            <Text style={styles.title}>🎵 Music</Text>
+            <Text style={styles.subtitle}>
+              No songs found in storage. Add some music to your device 🎶
+            </Text>
+          </View>
+        )}
 
-      {/* Mini Player */}
-      <SmallPlayer />
-    </SafeAreaView>
+        {/* Mini Player */}
+        <SmallPlayer />
+      </SafeAreaView>
+    </AnimatedScreen>
   );
 }
 

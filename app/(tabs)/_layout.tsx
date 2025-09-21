@@ -85,6 +85,15 @@ export default function TabLayout() {
                 ),
               }}
             />
+            <Tabs.Screen
+              name="playlists"
+              options={{
+                title: "Playlists",
+                tabBarIcon: ({ color, size }) => (
+                  <Ionicons name="library-outline" size={size} color={color} />
+                ),
+              }}
+            />
           </Tabs>
         </View>
       </GestureDetector>

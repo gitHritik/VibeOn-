@@ -9,6 +9,13 @@ export default function RootLayout() {
       <PlayerProvider>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="playlist/[playlistId]"
+            options={{
+              headerShown: false,
+              presentation: "card",
+            }}
+          />
         </Stack>
         <StatusBar style="light" />
       </PlayerProvider>

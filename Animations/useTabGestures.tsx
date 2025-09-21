@@ -11,21 +11,16 @@ export const useTabGestures = (tabRoutes: string[]) => {
   const segments = useSegments();
 
   const getCurrentTabIndex = useCallback(() => {
-    console.log("All segments ->", segments);
-
     // Get the last segment (current route)
     const currentRoute = segments[segments.length - 1];
-    console.log("Current Route ->", currentRoute);
 
     // Handle the index route - when on index tab, the route might be undefined or "(tabs)"
     if (!currentRoute || currentRoute === "(tabs)") {
-      console.log("On index route");
       return 0; // index is the first tab
     }
 
     // Find the route in our tabRoutes array
     const index = tabRoutes.indexOf(currentRoute);
-    console.log("Found index ->", index);
 
     // Return found index, or 0 (index) as fallback
     return index >= 0 ? index : 0;
@@ -45,14 +40,11 @@ export const useTabGestures = (tabRoutes: string[]) => {
         return;
       }
 
-      console.log("TargetIndex ->", targetIndex);
-      console.log("CurrentIndex ->", currentIndex);
-
       if (targetIndex !== currentIndex) {
         const targetRoute = tabRoutes[targetIndex];
         // For index route, navigate to the base tabs path
         const path = targetRoute === "" ? "/(tabs)/" : `/(tabs)/${targetRoute}`;
-        console.log("Navigating to ->", path);
+
         router.push(path as Href);
       }
     },

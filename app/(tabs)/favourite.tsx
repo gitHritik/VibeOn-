@@ -12,7 +12,6 @@ import {
   Text,
   View,
 } from "react-native";
-import AnimatedScreen from "./../../Animations/AnimatedScreen";
 
 // Song interface
 interface Song {
@@ -44,39 +43,34 @@ export default function Favourite() {
   );
 
   return (
-    <AnimatedScreen>
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Ionicons name="heart" size={24} color="#FF4C29" />
-          <Text style={styles.headerTitle}>Favourites</Text>
-        </View>
-
-        {/* Content */}
-        {favouriteSongs.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Ionicons name="heart-dislike" size={70} color="#555" />
-            <Text style={styles.emptyText}>No songs in favourites yet</Text>
-            <Pressable
-              style={styles.addButton}
-              onPress={() => router.push("/")}
-            >
-              <Ionicons name="add" size={28} color="#fff" />
-              <Text style={styles.addText}>Add a song</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <FlatList
-            data={favouriteSongs}
-            keyExtractor={(item) => item.id}
-            renderItem={renderSong}
-            contentContainerStyle={{ padding: 12 }}
-          />
-        )}
-        {/* Mini Player */}
-        <SmallPlayer />
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Ionicons name="heart" size={24} color="#FF4C29" />
+        <Text style={styles.headerTitle}>Favourites</Text>
       </View>
-    </AnimatedScreen>
+
+      {/* Content */}
+      {favouriteSongs.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="heart-dislike" size={70} color="#555" />
+          <Text style={styles.emptyText}>No songs in favourites yet</Text>
+          <Pressable style={styles.addButton} onPress={() => router.push("/")}>
+            <Ionicons name="add" size={28} color="#fff" />
+            <Text style={styles.addText}>Add a song</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <FlatList
+          data={favouriteSongs}
+          keyExtractor={(item) => item.id}
+          renderItem={renderSong}
+          contentContainerStyle={{ padding: 12 }}
+        />
+      )}
+      {/* Mini Player */}
+      <SmallPlayer />
+    </View>
   );
 }
 

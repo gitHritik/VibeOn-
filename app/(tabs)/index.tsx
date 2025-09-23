@@ -14,17 +14,13 @@ interface Song {
   uri: string;
 }
 
-const images = [
-  "https://pbs.twimg.com/media/G0jJL5Va4AAFSVF.jpg",
-  "https://i1.sndcdn.com/artworks-000179580652-qskijz-t1080x1080.jpg",
-  // add more thumbnails if you want
-];
+// const images = [
+//   "https://pbs.twimg.com/media/G0jJL5Va4AAFSVF.jpg",
+//   "https://i1.sndcdn.com/artworks-000179580652-qskijz-t1080x1080.jpg",
+//   // add more thumbnails if you want
+// ];
 
 // Utility function → pick random image
-const getRandomImage = () => {
-  const random = Math.floor(Math.random() * images.length);
-  return images[random];
-};
 
 export default function Index() {
   const [songs, setSongs] = useState<Song[]>([]);
@@ -60,7 +56,7 @@ export default function Index() {
         id: file.id,
         title: file.filename.replace(".mp3", ""),
         artist: "Unknown", // Needs ID3 parsing for real metadata
-        thumbnail: getRandomImage(),
+        thumbnail: file.uri,
         uri: file.uri,
       }));
 
@@ -69,6 +65,47 @@ export default function Index() {
 
     loadAllSongs();
   }, []);
+
+  //second way only works with normal android and ios devices not expo
+
+  // useEffect(() => {
+  //   const loadAllSongs = async () => {
+  //     try {
+  //       const { status } = await MediaLibrary.requestPermissionsAsync();
+  //       if (status !== "granted") {
+  //         Alert.alert(
+  //           "Permission required",
+  //           "We need access to your music files."
+  //         );
+  //         return;
+  //       }
+
+  //       const songs = await MusicFiles?.getAll({
+  //         id: true,
+  //         blured: false,
+  //         artist: true,
+  //         duration: true,
+  //         cover: true,
+  //         batchNumber: 0,
+  //         minimumSongDuration: 10000,
+  //       });
+
+  //       const formattedSongs = songs.map((file: any) => ({
+  //         id: file.id,
+  //         title: file.title,
+  //         artist: file.author || "Unknown",
+  //         thumbnail: file.cover, // this will be a base64 string
+  //         uri: file.path,
+  //       }));
+
+  //       setSongs(formattedSongs);
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //   };
+  //   loadAllSongs();
+  // }, []);
+
   // console.log(songs[0]);
 
   // delete songs

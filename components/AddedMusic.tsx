@@ -68,7 +68,12 @@ export default function AddedMusic({
               {/* Thumbnail with tick overlay */}
               <View>
                 <Image
-                  source={{ uri: item.thumbnail }}
+                  source={
+                    // item.thumbnail
+                    //   ? { uri: item.thumbnail } // if you’re still using URLs
+                    //   : // or use base64 if you switch later: { uri: `data:image/jpeg;base64,${item.thumbnail}` }
+                    require("../assets/thumbnail/default-img.jpg") // 👈 fallback
+                  }
                   style={[
                     styles.thumbnail,
                     isSelected(item.id) && { opacity: 0.5 },

@@ -13,7 +13,10 @@ export default function SmallPlayer() {
 
   return (
     <Pressable style={styles.container} onPress={() => router.push("/player")}>
-      <Image source={{ uri: currentSong.thumbnail }} style={styles.thumbnail} />
+      <Image
+        source={require("../assets/thumbnail/default-img.jpg")}
+        style={styles.thumbnail}
+      />
       <View style={styles.textContainer}>
         <Text style={styles.song}>{currentSong.title}</Text>
         <Text style={styles.artist}>{currentSong.artist}</Text>

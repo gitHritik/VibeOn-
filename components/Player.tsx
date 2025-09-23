@@ -1,5 +1,6 @@
 import { usePlayer } from "@/context/PlayerContext";
 import { Ionicons } from "@expo/vector-icons";
+
 import Slider from "@react-native-community/slider";
 import React, { useState } from "react";
 import {
@@ -14,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { usePlayList } from "./../context/PlayListContext";
 
 export default function Player() {
   const {
@@ -27,10 +29,9 @@ export default function Player() {
     playPrevious,
     loopMode,
     toggleLoopMode,
-    playlists,
-    addToPlaylist,
-    createPlaylist,
   } = usePlayer();
+
+  const { playlists, addToPlaylist, createPlaylist } = usePlayList();
 
   // Local state for modals
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
@@ -59,6 +60,8 @@ export default function Player() {
     }
   };
 
+  console.log(currentSong);
+
   // Get loop icon color based on current mode
   const getLoopIconColor = () => {
     return loopMode === "none" ? "#666" : "#FF4C29";
@@ -69,8 +72,6 @@ export default function Player() {
     playlistId: string,
     playlistName: string
   ) => {
-    if (!currentSong) return;
-
     const success = await addToPlaylist(playlistId, currentSong);
     if (success) {
       Alert.alert(
@@ -113,7 +114,10 @@ export default function Player() {
 
   return (
     <View style={styles.container}>
-      <Image source={{ uri: currentSong.thumbnail }} style={styles.albumArt} />
+      <Image
+        source={require("../assets/thumbnail/default-img.jpg")}
+        style={styles.albumArt}
+      />
       <Text style={styles.songTitle}>{currentSong.title}</Text>
       <Text style={styles.artist}>{currentSong.artist}</Text>
 

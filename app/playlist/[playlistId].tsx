@@ -12,18 +12,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { usePlayList } from "./../../context/PlayListContext";
 
 export default function PlaylistDetailScreen() {
   const { playlistId } = useLocalSearchParams<{ playlistId: string }>();
   const router = useRouter();
 
-  const {
-    currentSong,
-    isPlaying,
-    playSong,
-    removeFromPlaylist,
-    getPlaylistById,
-  } = usePlayer();
+  const { currentSong, isPlaying, playSong } = usePlayer();
+
+  const { removeFromPlaylist, getPlaylistById } = usePlayList();
 
   const [isEditMode, setIsEditMode] = useState(false);
 
@@ -73,11 +70,11 @@ export default function PlaylistDetailScreen() {
     );
   };
 
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
+  //   const formatDuration = (seconds: number) => {
+  //     const mins = Math.floor(seconds / 60);
+  //     const secs = Math.floor(seconds % 60);
+  //     return `${mins}:${secs.toString().padStart(2, "0")}`;
+  //   };
 
   const renderSongItem = ({ item, index }: { item: Song; index: number }) => {
     const isCurrentSong = currentSong?.id === item.id;
@@ -85,7 +82,7 @@ export default function PlaylistDetailScreen() {
     return (
       <TouchableOpacity
         style={[styles.songItem, isCurrentSong && styles.currentSongItem]}
-        onPress={() => handlePlaySong(item)}
+        onPress={() => [handlePlaySong(item), router.push("/player")]}
       >
         <View style={styles.songIndex}>
           {isCurrentSong && isPlaying ? (
@@ -102,7 +99,10 @@ export default function PlaylistDetailScreen() {
           )}
         </View>
 
-        <Image source={{ uri: item.thumbnail }} style={styles.songImage} />
+        <Image
+          source={require("../../assets/thumbnail/default-img.jpg")}
+          style={styles.songImage}
+        />
 
         <View style={styles.songInfo}>
           <Text
@@ -137,7 +137,7 @@ export default function PlaylistDetailScreen() {
       <View style={styles.playlistArt}>
         {playlist.songs.length > 0 ? (
           <Image
-            source={{ uri: playlist.songs[0].thumbnail }}
+            source={require("../../assets/thumbnail/default-img.jpg")}
             style={styles.playlistImage}
           />
         ) : (

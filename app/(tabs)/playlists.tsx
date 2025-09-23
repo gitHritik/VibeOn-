@@ -14,10 +14,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { usePlayList } from "./../../context/PlayListContext";
 
 export default function PlaylistsScreen() {
-  const { playlists, currentSong, isPlaying, createPlaylist, deletePlaylist } =
-    usePlayer();
+  const { playlists, createPlaylist, deletePlaylist } = usePlayList();
+
+  const { currentSong, isPlaying } = usePlayer();
+  // console.log(playlists);
 
   const router = useRouter();
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -65,6 +68,7 @@ export default function PlaylistsScreen() {
 
   // Handle playlist press - navigate to playlist detail
   const handlePlaylistPress = (playlistId: string) => {
+    console.log(playlistId);
     router.push(`/playlist/${playlistId}` as any);
   };
 
@@ -132,7 +136,7 @@ export default function PlaylistsScreen() {
           onPress={() => router.push("/(tabs)/player")}
         >
           <Image
-            source={{ uri: currentSong.thumbnail }}
+            source={require("../../assets/thumbnail/default-img.jpg")}
             style={styles.nowPlayingImage}
           />
           <View style={styles.nowPlayingInfo}>

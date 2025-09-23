@@ -14,6 +14,8 @@ import React, {
   useState,
 } from "react";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 export type Song = {
   id: string;
   title: string;
@@ -37,7 +39,6 @@ type PlayerContextType = {
   position: number; // seconds
   duration: number; // seconds
   loopMode: LoopMode;
-  playlists: Playlist[];
   playSong: (song: Song, list?: Song[]) => Promise<void>;
   togglePlayPause: () => Promise<void>;
   seekTo: (seconds: number) => Promise<void>;
@@ -45,11 +46,6 @@ type PlayerContextType = {
   playPrevious: () => Promise<void>;
   setLoopMode: (mode: LoopMode) => void;
   toggleLoopMode: () => void;
-  createPlaylist: (name: string) => Promise<Playlist>;
-  addToPlaylist: (playlistId: string, song: Song) => Promise<boolean>;
-  removeFromPlaylist: (playlistId: string, songId: string) => Promise<boolean>;
-  deletePlaylist: (playlistId: string) => Promise<boolean>;
-  getPlaylistById: (playlistId: string) => Playlist | null;
 };
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -59,22 +55,6 @@ export const usePlayer = (): PlayerContextType => {
   if (!ctx) throw new Error("usePlayer must be used inside PlayerProvider");
   return ctx;
 };
-
-// Move default playlists outside component to prevent re-creation
-const DEFAULT_PLAYLISTS: Playlist[] = [
-  {
-    id: "1",
-    name: "My Favorites",
-    songs: [],
-    createdAt: new Date("2024-01-01"), // Static date
-  },
-  {
-    id: "2",
-    name: "Recently Added",
-    songs: [],
-    createdAt: new Date("2024-01-01"), // Static date
-  },
-];
 
 export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -88,12 +68,34 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
 
+  useEffect(() => {
+    const getCurrentSong = async () => {
+      try {
+        const response = await AsyncStorage.getItem("currentSong");
+        if (response) {
+          setCurrentSong(JSON.parse(response));
+        }
+      } catch (error) {
+        console.error("Failed to load playlists from storage:", error);
+      }
+    };
+    getCurrentSong();
+  }, []);
+
+  useEffect(() => {
+    const setSongs = async () => {
+      try {
+        await AsyncStorage.setItem("currentSong", JSON.stringify(currentSong));
+      } catch (error) {
+        console.error("Failed to load playlists from storage:", error);
+      }
+    };
+    setSongs();
+  }, [currentSong]);
+
   // New state for loop mode and playlists
   const [loopMode, setLoopMode] = useState<LoopMode>("none");
-  const [playlists, setPlaylists] = useState<Playlist[]>(DEFAULT_PLAYLISTS);
-
   // Remove this console.log - it causes re-renders to be visible
-  console.log(playlists);
 
   // Guard so we only auto-advance once per finish event
   const finishedRef = useRef(false);
@@ -257,95 +259,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
     setLoopMode(modes[nextModeIndex]);
   }, [loopMode]);
 
-  // Playlist management functions
-  const createPlaylist = useCallback(
-    async (name: string): Promise<Playlist> => {
-      const newPlaylist: Playlist = {
-        id: Date.now().toString(),
-        name,
-        songs: [],
-        createdAt: new Date(),
-      };
-
-      setPlaylists((prev) => [...prev, newPlaylist]);
-      return newPlaylist;
-    },
-    []
-  );
-
-  const addToPlaylist = useCallback(
-    async (playlistId: string, song: Song): Promise<boolean> => {
-      try {
-        setPlaylists((prev) =>
-          prev.map((playlist) => {
-            if (playlist.id === playlistId) {
-              // Check if song already exists in playlist
-              const songExists = playlist.songs.some((s) => s.id === song.id);
-              if (songExists) {
-                return playlist; // Don't add duplicate
-              }
-              return {
-                ...playlist,
-                songs: [...playlist.songs, song],
-              };
-            }
-            return playlist;
-          })
-        );
-        return true;
-      } catch (error) {
-        console.error("Error adding to playlist:", error);
-        return false;
-      }
-    },
-    []
-  );
-
-  const removeFromPlaylist = useCallback(
-    async (playlistId: string, songId: string): Promise<boolean> => {
-      try {
-        setPlaylists((prev) =>
-          prev.map((playlist) => {
-            if (playlist.id === playlistId) {
-              return {
-                ...playlist,
-                songs: playlist.songs.filter((song) => song.id !== songId),
-              };
-            }
-            return playlist;
-          })
-        );
-        return true;
-      } catch (error) {
-        console.error("Error removing from playlist:", error);
-        return false;
-      }
-    },
-    []
-  );
-
-  const deletePlaylist = useCallback(
-    async (playlistId: string): Promise<boolean> => {
-      try {
-        setPlaylists((prev) =>
-          prev.filter((playlist) => playlist.id !== playlistId)
-        );
-        return true;
-      } catch (error) {
-        console.error("Error deleting playlist:", error);
-        return false;
-      }
-    },
-    []
-  );
-
-  const getPlaylistById = useCallback(
-    (playlistId: string): Playlist | null => {
-      return playlists.find((playlist) => playlist.id === playlistId) || null;
-    },
-    [playlists]
-  );
-
   // Optimize auto-advance logic - reduce frequency of checks
   const lastProcessedTime = useRef(0);
 
@@ -420,7 +333,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
       position: status?.currentTime ?? 0,
       duration: status?.duration ?? 0,
       loopMode,
-      playlists,
       playSong,
       togglePlayPause,
       seekTo,
@@ -428,11 +340,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
       playPrevious,
       setLoopMode,
       toggleLoopMode,
-      createPlaylist,
-      addToPlaylist,
-      removeFromPlaylist,
-      deletePlaylist,
-      getPlaylistById,
     }),
     [
       currentSong,
@@ -440,7 +347,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
       status?.currentTime,
       status?.duration,
       loopMode,
-      playlists,
+
       playSong,
       togglePlayPause,
       seekTo,
@@ -448,11 +355,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
       playPrevious,
       // setLoopMode is just setState, no need to memoize
       toggleLoopMode,
-      createPlaylist,
-      addToPlaylist,
-      removeFromPlaylist,
-      deletePlaylist,
-      getPlaylistById,
     ]
   );
 

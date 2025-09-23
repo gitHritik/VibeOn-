@@ -7,7 +7,7 @@ import {
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
-import { useTabGestures } from "./../../Animations/useTabGestures";
+import { useTabGestures } from "../../animations/useTabGestures";
 
 export default function TabLayout() {
   const tabRoutes = ["", "player", "favourite"];

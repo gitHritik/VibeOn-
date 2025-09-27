@@ -1,7 +1,7 @@
 import { usePlayer } from "@/context/PlayerContext";
 import { Ionicons } from "@expo/vector-icons";
-
 import Slider from "@react-native-community/slider";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
@@ -38,7 +38,24 @@ export default function Player() {
   const [showCreatePlaylistModal, setShowCreatePlaylistModal] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
 
-  if (!currentSong) return null;
+  const router = useRouter();
+
+  // If no song is playing, show a message
+
+  if (!currentSong) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Ionicons name="musical-notes" size={60} color="#FF4C29" />
+        <Text style={styles.emptyText}>No song is playing</Text>
+        <Text style={styles.subText}>
+          Choose a track from your Music tab 🎶
+        </Text>
+        <Pressable style={styles.button} onPress={() => router.push("/")}>
+          <Text style={styles.buttonText}>Go to Music</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   // Format seconds -> mm:ss
   const formatTime = (secs: number) => {
@@ -284,11 +301,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginBottom: 30,
   },
-  songTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#fff",
-  },
   artist: {
     fontSize: 16,
     color: "#aaa",
@@ -428,21 +440,53 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 15,
   },
-  button: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: "center",
-  },
+
   cancelButton: {
     backgroundColor: "#444",
   },
   createButton: {
     backgroundColor: "#FF4C29",
   },
-  buttonText: {
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#1E1E1E",
+    padding: 20,
+  },
+  emptyText: {
+    marginTop: 12,
+    fontSize: 18,
+    fontWeight: "600",
     color: "#fff",
+  },
+  subText: {
+    marginTop: 6,
+    fontSize: 14,
+    color: "#aaa",
+    textAlign: "center",
+  },
+  button: {
+    marginTop: 20,
+    backgroundColor: "#FF4C29",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  buttonText: {
     fontSize: 16,
     fontWeight: "600",
+    color: "#fff",
+  },
+  playerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#111",
+  },
+  songTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#FF4C29",
   },
 });

@@ -30,7 +30,10 @@ export default function Favourite() {
   const renderSong = ({ item }: { item: Song }) => (
     <Pressable onPress={() => playSong(item, favouriteSongs)}>
       <View style={styles.songCard}>
-        <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
+        <Image
+          source={require("../../assets/thumbnail/default-img.jpg")}
+          style={styles.thumbnail}
+        />
         <View style={styles.songInfo}>
           <Text style={styles.songTitle}>{item.title}</Text>
           <Text style={styles.songArtist}>{item.artist}</Text>

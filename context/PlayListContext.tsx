@@ -107,7 +107,6 @@ export const PlayListProvider: React.FC<{ children: React.ReactNode }> = ({
         songs: [],
         createdAt: new Date(),
       };
-      console.log(newPlaylist);
 
       setPlaylists((prev) => [...prev, newPlaylist]);
       return newPlaylist;

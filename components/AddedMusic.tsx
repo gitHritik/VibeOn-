@@ -1,8 +1,11 @@
 import { useFavourites } from "@/context/FavouriteContext";
 import { usePlayer } from "@/context/PlayerContext";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import { useRouter } from "expo-router";
+
+import React, { useEffect, useState } from "react";
 import {
+  BackHandler,
   FlatList,
   Image,
   Pressable,
@@ -43,12 +46,34 @@ export default function AddedMusic({
     );
   };
 
+  //backward seletted song feature
+
+  useEffect(() => {
+    const backAction = () => {
+      if (selectedSongs.length > 0) {
+        //if songs are present inside this then clear seciont rather then exit the app
+        setSelectedSongs([]);
+        return true;
+      }
+      //if it is empty just exit the app
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [selectedSongs]);
+
   // const isFavourite = (id: string) => favourite.includes(id);
   const isSelected = (id: string) => selectedSongs.includes(id);
   const areAllSelectedFav = selectedSongs.every((id) =>
     favouriteSongs.some((song) => song.id === id)
   );
 
+  const router = useRouter();
   return (
     <View style={styles.container}>
       <FlatList
@@ -60,7 +85,7 @@ export default function AddedMusic({
               () =>
                 selectedSongs.length > 0
                   ? toggleSelect(item.id) // if already selecting, continue selecting
-                  : playSong(item, songs) // normal play if nothing is selected
+                  : [playSong(item, songs), router.push("/player")] // normal play if nothing is selected
             }
             onLongPress={() => toggleSelect(item.id)} // start selection
           >
@@ -97,7 +122,9 @@ export default function AddedMusic({
 
               {/* Play Button (disabled if selecting) */}
               {selectedSongs.length === 0 && (
-                <Pressable onPress={() => playSong(item)}>
+                <Pressable
+                  onPress={() => [playSong(item), router.push("/player")]}
+                >
                   <Ionicons name="play-circle" size={28} color="#FF4C29" />
                 </Pressable>
               )}
@@ -105,7 +132,6 @@ export default function AddedMusic({
           </Pressable>
         )}
       />
-
       {/* Floating Add Button
       {selectedSongs.length === 0 && (
         <Pressable
@@ -118,7 +144,6 @@ export default function AddedMusic({
           <Ionicons name="add" size={30} color="#fff" />
         </Pressable>
       )} */}
-
       {/* Delete Button (shows when songs selected) */}
       {selectedSongs.length > 0 && (
         <>

@@ -55,7 +55,7 @@ export default function Index() {
       const allSongs: Song[] = media.assets.map((file) => ({
         id: file.id,
         title: file.filename.replace(".mp3", ""),
-        artist: "Unknown", // Needs ID3 parsing for real metadata
+        artist: "Hrk", // Needs ID3 parsing for real metadata
         thumbnail: file.uri,
         uri: file.uri,
       }));
@@ -109,7 +109,9 @@ export default function Index() {
   // console.log(songs[0]);
 
   // delete songs
-  const handleDeleteSongs = (ids: string[]) => {
+  const handleDeleteSongs = async (ids: string[]) => {
+    await MediaLibrary.deleteAssetsAsync([ids[0]]);
+    ``;
     setSongs((prev) => prev.filter((song) => !ids.includes(song.id)));
   };
 

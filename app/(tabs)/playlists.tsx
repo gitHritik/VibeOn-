@@ -68,7 +68,6 @@ export default function PlaylistsScreen() {
 
   // Handle playlist press - navigate to playlist detail
   const handlePlaylistPress = (playlistId: string) => {
-    console.log(playlistId);
     router.push(`/playlist/${playlistId}` as any);
   };
 
